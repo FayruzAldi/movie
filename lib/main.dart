@@ -1,76 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'controllers/main_controller.dart';
-import 'home_page.dart';
-import 'search_page.dart';
-import 'favorite_page.dart';
-import 'profile_page.dart';
+import 'pages/home_page.dart';
+import 'pages/search_page.dart';
+import 'pages/my_list_page.dart';
+import 'pages/profile_page.dart';
 
 void main() {
-  // Inisialisasi MainController
   Get.put(MainController());
-  
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData.dark().copyWith(
-        primaryColor: Colors.black,
-        scaffoldBackgroundColor: Colors.black,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
-          titleTextStyle: TextStyle(color: Colors.red, fontSize: 20),
-        ),
+      title: 'Aplikasi Film',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
       ),
-      home: const MainPage(),
+      home: MainPage(),
     );
   }
 }
 
 class MainPage extends StatelessWidget {
-  const MainPage({super.key});
+  final MainController controller = Get.find();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Obx(() {
-        switch (Get.find<MainController>().currentIndex.value) {
-          case 0:
-            return const HomePage();
-          case 1:
-            return const SearchPage();
-          case 2:
-            return const FavoritePage();
-          case 3:
-            return const ProfilePage();
-          default:
-            return const HomePage();
-        }
-      }),
-      bottomNavigationBar: Obx(() {
-        return BottomNavigationBar(
-          backgroundColor: Colors.black,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Colors.red,
-          unselectedItemColor: Colors.white,
-          currentIndex: Get.find<MainController>().currentIndex.value,
-          onTap: (index) {
-            Get.find<MainController>().currentIndex.value = index;
-          },
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorite'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-        );
-      }),
+      body: Obx(() => IndexedStack(
+        index: controller.currentIndex.value,
+        children: [
+          HomePage(),
+          SearchPage(),
+          MyListPage(),
+          ProfilePage(),
+        ],
+      )),
+      bottomNavigationBar: Obx(() => BottomNavigationBar(
+        currentIndex: controller.currentIndex.value,
+        onTap: controller.changeTab,
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Cari'),
+          BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Daftar Saya'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
+        ],
+      )),
     );
   }
 }
