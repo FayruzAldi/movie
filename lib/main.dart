@@ -22,6 +22,7 @@ class MyApp extends StatelessWidget {
         brightness: Brightness.dark,
       ),
       initialRoute: '/login',
+      debugShowCheckedModeBanner: false,
       getPages: [
         GetPage(name: '/login', page: () => LoginPage()),
         GetPage(name: '/', page: () => MainPage()),
