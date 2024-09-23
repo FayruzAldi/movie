@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'controllers/main_controller.dart';
 import 'pages/home_page.dart';
-import 'pages/search_page.dart';
 import 'pages/my_list_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/login_page.dart';
 
 void main() {
   Get.put(MainController());
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
@@ -45,7 +46,6 @@ class MainPage extends StatelessWidget {
           index: controller.currentIndex.value,
           children: [
             HomePage(),
-            SearchPage(),
             MyListPage(),
             ProfilePage(),
           ],
@@ -55,9 +55,8 @@ class MainPage extends StatelessWidget {
           onTap: controller.changeTab,
           selectedItemColor: Colors.red, // Warna merah untuk item yang dipilih
           unselectedItemColor: Colors.grey, // Warna abu-abu untuk item yang tidak dipilih
-          items: [
+          items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Beranda'),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Cari'),
             BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Daftar Saya'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profil'),
           ],

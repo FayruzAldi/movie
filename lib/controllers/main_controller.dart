@@ -16,6 +16,8 @@ class MainController extends GetxController {
     {'title': 'The Silence of the Lambs', 'description': 'Thriller psikologis', 'rating': 4.6, 'image': 'https://via.placeholder.com/150', 'isLoved': false},
   ].obs;
 
+  var searchResults = <Map<String, dynamic>>[].obs;
+
   List<Map<String, dynamic>> get lovedMovies => dummyMovies.where((movie) => movie['isLoved'] as bool).toList();
 
   void changeTab(int index) {
@@ -39,8 +41,8 @@ class MainController extends GetxController {
     currentIndex.value = 0;
   }
 
-  List<Map<String, dynamic>> searchMovies(String query) {
-    return dummyMovies.where((movie) => 
+  void searchMovies(String query) {
+    searchResults.value = dummyMovies.where((movie) => 
       movie['title'].toString().toLowerCase().contains(query.toLowerCase()) ||
       movie['description'].toString().toLowerCase().contains(query.toLowerCase())
     ).toList();
