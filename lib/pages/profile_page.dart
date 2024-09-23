@@ -19,16 +19,16 @@ class ProfilePage extends StatelessWidget {
             backgroundImage: NetworkImage('https://via.placeholder.com/150'),
           ),
           SizedBox(height: 20),
-          Text(
-            'Nama Pengguna',
+          Obx(() => Text(
+            controller.username.value,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
+          )),
           SizedBox(height: 20),
           ListTile(
             leading: Icon(Icons.email),
             title: Text('Email'),
-            subtitle: Text('pengguna@email.com'),
+            subtitle: Text('${controller.username.value.toLowerCase()}@email.com'),
           ),
           ListTile(
             leading: Icon(Icons.notifications),
@@ -44,6 +44,14 @@ class ProfilePage extends StatelessWidget {
             leading: Icon(Icons.help),
             title: Text('Bantuan'),
             onTap: () {},
+          ),
+          ListTile(
+            leading: Icon(Icons.exit_to_app),
+            title: Text('Keluar'),
+            onTap: () {
+              controller.logout();
+              Get.offAllNamed('/login');
+            },
           ),
         ],
       ),

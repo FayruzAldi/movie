@@ -19,13 +19,13 @@ class HomePage extends StatelessWidget {
             return Card(
               margin: EdgeInsets.all(8),
               child: ListTile(
-                leading: Image.network(movie['image'] as String),
-                title: Text(movie['title'] as String),
-                subtitle: Text(movie['description'] as String),
+                leading: Image.network(movie['image']),
+                title: Text(movie['title']),
+                subtitle: Text(movie['description']),
                 trailing: IconButton(
                   icon: Icon(
                     Icons.favorite,
-                    color: (movie['isLoved'] as bool) ? Colors.red : Colors.grey,
+                    color: movie['isLoved'] ? Colors.red : Colors.grey,
                   ),
                   onPressed: () => controller.toggleLove(index),
                 ),

@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 class MainController extends GetxController {
   var currentIndex = 0.obs;
+  var isLoggedIn = false.obs;
+  var username = ''.obs;
   
   final RxList<Map<String, dynamic>> dummyMovies = <Map<String, dynamic>>[
     {'title': 'Inception', 'description': 'Film sci-fi tentang mimpi', 'rating': 4.8, 'image': 'https://via.placeholder.com/150', 'isLoved': false},
@@ -24,6 +26,17 @@ class MainController extends GetxController {
     final movie = dummyMovies[index];
     movie['isLoved'] = !(movie['isLoved'] as bool);
     dummyMovies[index] = movie;
+  }
+
+  void login(String user) {
+    isLoggedIn.value = true;
+    username.value = user;
+  }
+
+  void logout() {
+    isLoggedIn.value = false;
+    username.value = '';
+    currentIndex.value = 0;
   }
 
   List<Map<String, dynamic>> searchMovies(String query) {
