@@ -3,31 +3,64 @@ import 'package:get/get.dart';
 import '../controllers/main_controller.dart';
 
 class LoginPage extends StatelessWidget {
-  final MainController controller = Get.find();
+  final MainController mainController = Get.find();
   final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const Text(
+              'Welcome to Motify',
+              style: TextStyle(fontSize: 24, color: Colors.white),
+            ),
+            const SizedBox(height: 20),
             TextField(
               controller: usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+              decoration: const InputDecoration(
+                labelText: 'Username',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.red),
+                ),
+              ),
+              style: const TextStyle(color: Colors.white),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                labelStyle: TextStyle(color: Colors.white),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.red),
+                ),
+              ),
+              obscureText: true,
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                if (usernameController.text.isNotEmpty) {
-                  controller.login(usernameController.text);
-                  Get.offAllNamed('/');
-                }
+                mainController.login(usernameController.text);
               },
-              child: Text('Login'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: const Text('Login'),
             ),
           ],
         ),
