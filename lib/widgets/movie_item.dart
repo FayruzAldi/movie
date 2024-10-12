@@ -1,28 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../controllers/main_controller.dart';
+import '../models/task_model.dart';
 
 class MovieItem extends StatelessWidget {
-  final Map<String, dynamic> movie;
-  final int index;
-  final bool isSearchResult;
+  final TaskModel task;
+  final Function(TaskModel) toggleLove;
 
-  const MovieItem({super.key, required this.movie, required this.index, this.isSearchResult = false});
+  MovieItem({required this.task, required this.toggleLove});
 
   @override
   Widget build(BuildContext context) {
-    final MainController controller = Get.find<MainController>();
-    
     return ListTile(
-      leading: Image.network(movie['image'], width: 50, height: 75, fit: BoxFit.cover),
-      title: Text(movie['title']),
-      subtitle: Text(movie['description']),
+      title: Text(task.title),
+      subtitle: Text(task.description),
       trailing: IconButton(
-        icon: Icon(
-          movie['isLoved'] ? Icons.favorite : Icons.favorite_border,
-          color: movie['isLoved'] ? Colors.red : null,
-        ),
-        onPressed: () => controller.toggleLove(index),
+        icon: Icon(Icons.favorite_border),
+        onPressed: () {
+          toggleLove(task);
+        },
       ),
     );
   }

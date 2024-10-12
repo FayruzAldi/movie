@@ -1,124 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
-import 'package:movie/controllers/main_controller.dart';
-import 'package:movie/pages/movie_search_delegate.dart';
-import 'package:movie/pages/profile_page.dart';
+import '../controllers/main_controller.dart';
+import 'movie_detail_page.dart'; // Impor halaman detail film
 
 class HomePage extends StatelessWidget {
-  final MainController mainController = Get.put(MainController());
+  final MainController mainController = Get.find(); // Mengambil instance MainController
+  int _selectedIndex = 0; // Menyimpan indeks yang dipilih
 
-  HomePage({super.key});
+  void _onItemTapped(int index) {
+    _selectedIndex = index;
+    if (index == 1) {
+      Get.toNamed('/bookmarks'); // Navigasi ke halaman bookmarks
+    } else if (index == 2) {
+      Get.toNamed('/profile'); // Navigasi ke halaman profile
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Obx(() {
-          // Change title based on the current tab
-          switch (mainController.currentIndex.value) {
-            case 0:
-              return const Text('Home Page');
-            case 1:
-              return const Text('My List');
-            case 2:
-              return const Text('Profile Page');
-            default:
-              return const Text('Home Page');
-          }
-        }),
-        actions: [
-          Obx(() {
-            // Show search icon only on 'Home' and 'My List' tabs
-            if (mainController.currentIndex.value != 2) {
-              return IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () {
-                  showSearch(
-                    context: context,
-                    delegate: MovieSearchDelegate(mainController),
-                  );
-                },
-              );
-            } else {
-              return const SizedBox(); // Hide icon on Profile page
-            }
-          }),
+        title: Text('Movie Slider'),
+      ),
+      body: Column(
+        children: [
+          // Slider Gambar
+          Container(
+            height: 200, // Atur tinggi sesuai kebutuhan
+            child: PageView(
+              children: [
+                Image.asset('lib/assets/image.png'), // Gambar placeholder
+                Image.asset('lib/assets/image.png'), // Gambar placeholder
+                Image.asset('lib/assets/image.png'), // Gambar placeholder
+              ],
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Obx(() {
+                return mainController.movieList.isNotEmpty // Cek apakah ada film
+                    ? ListView.builder(
+                        itemCount: mainController.movieList.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(mainController.movieList[index].title),
+                            subtitle: Text(mainController.movieList[index].description),
+                            trailing: IconButton(
+                              icon: Icon(
+                                mainController.movieList[index].isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                              ),
+                              onPressed: () {
+                                // Toggle favorit
+                                mainController.movieList[index].isFavorite =
+                                    !mainController.movieList[index].isFavorite;
+                                // Update di database
+                                mainController.updateMovie(mainController.movieList[index]);
+                              },
+                            ),
+                            onTap: () {
+                              Get.to(() => MovieDetailPage(movie: mainController.movieList[index])); // Navigasi ke halaman detail
+                            },
+                          );
+                        },
+                      )
+                    : Center(child: Text('Tidak ada film tersedia.')); // Pesan jika tidak ada film
+              }),
+            ),
+          ),
         ],
       ),
-      body: Obx(() {
-        switch (mainController.currentIndex.value) {
-          case 0:
-            return ListView.builder(
-              itemCount: mainController.searchResults.length,
-              itemBuilder: (context, index) {
-                final movie = mainController.searchResults[index];
-                return ListTile(
-                  leading: Image.network(movie['image']),
-                  title: Text(movie['title']),
-                  subtitle: Text(movie['description']),
-                  trailing: IconButton(
-                    icon: Icon(
-                      movie['isLoved'] ? Icons.favorite : Icons.favorite_border,
-                      color: movie['isLoved'] ? Colors.red : null,
-                    ),
-                    onPressed: () {
-                      mainController.toggleLove(index);
-                    },
-                  ),
-                );
-              },
-            );
-          case 1:
-            return ListView.builder(
-              itemCount: mainController.lovedMovies.length,
-              itemBuilder: (context, index) {
-                final movie = mainController.lovedMovies[index];
-                return ListTile(
-                  leading: Image.network(movie['image']),
-                  title: Text(movie['title']),
-                  subtitle: Text(movie['description']),
-                  trailing: IconButton(
-                    icon: Icon(
-                      movie['isLoved'] ? Icons.favorite : Icons.favorite_border,
-                      color: movie['isLoved'] ? Colors.red : null,
-                    ),
-                    onPressed: () {
-                      mainController.toggleLove(index);
-                    },
-                  ),
-                );
-              },
-            );
-          case 2:
-            return ProfilePage(); // Halaman profil
-          default:
-            return const Center(child: Text('Home'));
-        }
-      }),
-      bottomNavigationBar: Obx(() {
-        return BottomNavigationBar(
-          currentIndex: mainController.currentIndex.value,
-          onTap: (index) {
-            mainController.changeTab(index);
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.list),
-              label: 'My List',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-          ],
-        );
-      }),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bookmark),
+            label: 'Bookmarks',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
     );
   }
 }

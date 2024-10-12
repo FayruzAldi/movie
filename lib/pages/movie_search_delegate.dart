@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../controllers/main_controller.dart';
+import '../controllers/task_controller.dart';
+import '../models/task_model.dart';
 
 class MovieSearchDelegate extends SearchDelegate {
-  final MainController mainController;
-
-  MovieSearchDelegate(this.mainController);
+  final TaskController dbController = TaskController();
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -13,8 +11,7 @@ class MovieSearchDelegate extends SearchDelegate {
       IconButton(
         icon: const Icon(Icons.clear),
         onPressed: () {
-          query = ''; // Kosongkan input pencarian
-          mainController.clearSearchResults(); // Kosongkan hasil pencarian
+          query = '';
         },
       ),
     ];
@@ -25,75 +22,44 @@ class MovieSearchDelegate extends SearchDelegate {
     return IconButton(
       icon: const Icon(Icons.arrow_back),
       onPressed: () {
-        mainController.clearSearchResults(); // Kosongkan hasil pencarian saat tombol back ditekan
-        close(context, null); // Tutup halaman pencarian
+        close(context, null);
       },
     );
   }
 
   @override
   Widget buildResults(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      mainController.searchMovies(query); // Panggil fungsi pencarian dengan query terbaru
-    });
-
-    return Obx(() {
-      if (mainController.searchResults.isEmpty) {
-        return const Center(child: Text('No results found.'));
-      }
-      return ListView.builder(
-        itemCount: mainController.searchResults.length,
-        itemBuilder: (context, index) {
-          final movie = mainController.searchResults[index];
-          return ListTile(
-            leading: Image.network(movie['image']),
-            title: Text(movie['title']),
-            subtitle: Text(movie['description']),
-            trailing: IconButton(
-              icon: Icon(
-                movie['isLoved'] ? Icons.favorite : Icons.favorite_border,
-                color: movie['isLoved'] ? Colors.red : null,
-              ),
-              onPressed: () {
-                mainController.toggleLove(index); // Toggle 'loved' status
-              },
-            ),
+    return FutureBuilder<List<TaskModel>>(
+      future: dbController.fetchMovies(), // Ambil data dari database
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final results = snapshot.data!.where((task) => task.title.contains(query)).toList();
+          return ListView.builder(
+            itemCount: results.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(results[index].title),
+                subtitle: Text(results[index].description),
+                trailing: IconButton(
+                  icon: const Icon(Icons.favorite_border),
+                  onPressed: () {
+                    // Logika toggle love
+                  },
+                ),
+              );
+            },
           );
-        },
-      );
-    });
+        }
+      },
+    );
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      mainController.searchMovies(query); // Panggil fungsi pencarian dengan query terbaru
-    });
-
-    return Obx(() {
-      if (mainController.searchResults.isEmpty) {
-        return const Center(child: Text('No suggestions available.'));
-      }
-      return ListView.builder(
-        itemCount: mainController.searchResults.length,
-        itemBuilder: (context, index) {
-          final movie = mainController.searchResults[index];
-          return ListTile(
-            leading: Image.network(movie['image']),
-            title: Text(movie['title']),
-            subtitle: Text(movie['description']),
-            trailing: IconButton(
-              icon: Icon(
-                movie['isLoved'] ? Icons.favorite : Icons.favorite_border,
-                color: movie['isLoved'] ? Colors.red : null,
-              ),
-              onPressed: () {
-                mainController.toggleLove(index); // Toggle 'loved' status
-              },
-            ),
-          );
-        },
-      );
-    });
+    return Container(); // Anda bisa menambahkan saran di sini
   }
 }
