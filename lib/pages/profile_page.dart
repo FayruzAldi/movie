@@ -1,45 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:movie/pages/bookmarks_page.dart';
 import '../controllers/main_controller.dart';
+import '../pages/home_page.dart';
 
 class ProfilePage extends StatelessWidget {
   final MainController mainController = Get.find();
 
-   ProfilePage({super.key});
+  ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Obx(() {
-        return Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.red,
-              child: Text(
-                mainController.username.value[0].toUpperCase(),
-                style: const TextStyle(fontSize: 40, color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Hello, ${mainController.username.value}',
-              style: const TextStyle(fontSize: 24, color: Colors.white),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                mainController.logout();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
-              child: const Text('Logout'),
-            ),
-          ],
-        );
-      }),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Profile'),
+        automaticallyImplyLeading: false, // Menonaktifkan ikon tanda panah
+      ),
+      body: Center(child: Text('Profile Page')),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bookmark),
+            label: 'Bookmarks',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: 2, // Set index ke 2 untuk Profile
+        onTap: (index) {
+          // Logika untuk navigasi ke halaman yang sesuai
+          if (index == 0) {
+            Get.to(() => HomePage());
+          } else if (index == 1) {
+            Get.to(() => BookmarksPage());
+          }
+        },
+      ),
     );
   }
 }

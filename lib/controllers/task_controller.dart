@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:movie/models/favorite_movie_model.dart';
 import 'package:movie/models/task_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -22,7 +23,7 @@ class TaskController extends GetxController {
 
     return await openDatabase(
       path,
-      version: 3, // Tingkatkan versi untuk migrasi
+      version: 4, // Tingkatkan versi untuk migrasi
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE tasks(
@@ -34,10 +35,23 @@ class TaskController extends GetxController {
             isFavorite INTEGER DEFAULT 0
           )
         ''');
+        await db.execute('''
+          CREATE TABLE favorite_movies(
+            id INTEGER PRIMARY KEY,
+            title TEXT,
+            description TEXT
+          )
+        ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 3) {
-          await db.execute('ALTER TABLE tasks ADD COLUMN isFavorite INTEGER DEFAULT 0');
+        if (oldVersion < 4) {
+          await db.execute('''
+            CREATE TABLE favorite_movies(
+              id INTEGER PRIMARY KEY,
+              title TEXT,
+              description TEXT
+            )
+          ''');
         }
       },
     );
@@ -159,5 +173,32 @@ class TaskController extends GetxController {
   Future<void> deleteAllMovies() async {
     var dbClient = await db;
     await dbClient!.delete('tasks'); // Menghapus semua film dari tabel
+  }
+
+  Future<void> addFavoriteMovie(FavoriteMovieModel movie) async {
+    var dbClient = await db;
+    await dbClient!.insert('favorite_movies', {
+      'id': movie.id,
+      'title': movie.title,
+      'description': movie.description,
+    });
+  }
+
+  Future<void> deleteFavoriteMovie(int id) async {
+    var dbClient = await db;
+    print("Deleting favorite movie with id: $id"); // Log untuk debugging
+    await dbClient!.delete('favorite_movies', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<List<FavoriteMovieModel>> fetchFavoriteMovies() async {
+    var dbClient = await db;
+    // Tambahkan log untuk debugging
+    print("Fetching favorite movies from database...");
+    List<Map<String, dynamic>> queryResult = await dbClient!.query('favorite_movies');
+    return queryResult.map((data) => FavoriteMovieModel(
+      id: data['id'],
+      title: data['title'],
+      description: data['description'],
+    )).toList();
   }
 }

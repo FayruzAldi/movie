@@ -10,7 +10,7 @@ import 'package:movie/pages/home_page.dart';
 import 'package:movie/pages/login_page.dart';
 import 'package:movie/pages/profile_page.dart';
 import 'package:movie/pages/splash_screen.dart';
-import 'package:movie/pages/bookmarks.dart'; // Tambahkan impor ini
+import 'package:movie/pages/bookmarks_page.dart'; // Tambahkan impor ini
 import 'package:movie/controllers/task_controller.dart';
 
 void main() {
