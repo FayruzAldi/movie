@@ -13,18 +13,27 @@ class MainController extends GetxController {
   @override
   void onInit() {
     fetchMoviesFromDb();
-    fetchFavoriteMoviesFromDb(); // Ambil film favorit saat inisialisasi
+    fetchFavoriteMoviesFromDb();
     super.onInit();
   }
 
   void fetchMoviesFromDb() async {
     var movies = await dbHelper.fetchMovies();
     movieList.assignAll(movies);
+    updateFavoriteStatus();
   }
 
   void fetchFavoriteMoviesFromDb() async {
     var favorites = await dbHelper.fetchFavoriteMovies();
     favoriteMovies.assignAll(favorites);
+    updateFavoriteStatus();
+  }
+
+  void updateFavoriteStatus() {
+    for (var movie in movieList) {
+      movie.isFavorite = favoriteMovies.any((fav) => fav.id == movie.id);
+    }
+    update();
   }
 
   void addMovie(TaskModel task) async {
@@ -34,45 +43,23 @@ class MainController extends GetxController {
 
   void deleteMovie(int id) async {
     await dbHelper.deleteMovie(id);
-    fetchMoviesFromDb(); // Memuat ulang daftar film setelah menghapus
+    fetchMoviesFromDb();
   }
 
   void updateMovie(TaskModel task) async {
     await dbHelper.updateMovie(task);
-    fetchMoviesFromDb(); // Memuat ulang daftar film setelah memperbarui
+    fetchMoviesFromDb();
   }
 
   void logout() {}
 
-  void deleteMovieFromFavorite(String id) {
-    // Hapus film dari daftar favorit
-    favoriteMovies.removeWhere((movie) => movie.id == id);
-    // Jika Anda ingin menghapus dari movieList, pastikan untuk tidak menghapusnya dari sini
-  }
-
-  void updateMovieFromFavorite(TaskModel task) {
-    // Logika untuk memperbarui film
-    int index = movieList.indexWhere((m) => m.id == task.id);
-    if (index != -1) {
-      movieList[index] = task;
-    }
-  }
-
   void addMovieToFavorites(FavoriteMovieModel movie) async {
     await dbHelper.addFavoriteMovie(movie);
-    fetchFavoriteMoviesFromDb(); // Memuat ulang daftar film favorit setelah menambah
+    fetchFavoriteMoviesFromDb();
   }
 
   void deleteMovieFromFavorites(int id) async {
     await dbHelper.deleteFavoriteMovie(id);
-    
-    // Perbarui status isFavorite di movieList
-    int index = movieList.indexWhere((movie) => movie.id == id);
-    if (index != -1) {
-      movieList[index].isFavorite = false; // Set isFavorite menjadi false
-      print("Updated movie ${movieList[index].title} to not favorite."); // Log untuk debugging
-    }
-
     fetchFavoriteMoviesFromDb();
   }
 }

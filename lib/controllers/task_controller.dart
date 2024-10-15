@@ -109,52 +109,52 @@ class TaskController extends GetxController {
       TaskModel(
         title: 'Inception',
         description: 'A mind-bending thriller about dreams within dreams.',
-        imageUrl: 'lib/assets/image.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/inception.png', // Ganti dengan path placeholder
       ),
       TaskModel(
         title: 'Thor',
         description: 'Thor, the god of thunder.',
-        imageUrl: 'lib/assets/image.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/thor.png', // Ganti dengan path placeholder
       ),
       TaskModel(
         title: 'Hulk',
         description: 'The strongest Avenger.',
-        imageUrl: 'lib/assets/image.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/hulk.png', // Ganti dengan path placeholder
       ),
       TaskModel(
         title: 'Iron Man',
         description: 'A billionaire industrialist and genius inventor.',
-        imageUrl: 'lib/assets/image.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/ironman.png', // Ganti dengan path placeholder
       ),
       TaskModel(
         title: 'Captain America',
         description: 'The first Avenger.',
-        imageUrl: 'lib/assets/image.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/captainamerica.png', // Ganti dengan path placeholder
       ),
       TaskModel(
         title: 'Black Panther',
         description: 'The king of Wakanda.',
-        imageUrl: 'lib/assets/image.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/blackpanther.png', // Ganti dengan path placeholder
       ),
       TaskModel(
         title: 'Doctor Strange',
         description: 'A former neurosurgeon turned master of the mystic arts.',
-        imageUrl: 'lib/assets/image.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/doctorstrange.png', // Ganti dengan path placeholder
       ),
       TaskModel(
         title: 'Guardians of the Galaxy',
         description: 'A group of intergalactic criminals who must pull together to stop a fanatical warrior.',
-        imageUrl: 'lib/assets/image.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/guardiansofthegalaxy.png', // Ganti dengan path placeholder
       ),
       TaskModel(
         title: 'Ant-Man',
         description: 'A superhero with the ability to shrink in scale but increase in strength.',
-        imageUrl: 'lib/assets/image.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/antman.png', // Ganti dengan path placeholder
       ),
       TaskModel(
         title: 'Spider-Man',
         description: 'A young man with spider-like abilities fights crime as a superhero in New York City.',
-        imageUrl: 'lib/assets/image.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/spiderman.png', // Ganti dengan path placeholder
       ),
     ];
 
@@ -198,7 +198,7 @@ class TaskController extends GetxController {
     return queryResult.map((data) => FavoriteMovieModel(
       id: data['id'],
       title: data['title'],
-      description: data['description'],
+      description: data['description'], imageUrl: '',
     )).toList();
   }
 }

@@ -35,35 +35,80 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
-          // Tambahkan CarouselSlider di sini
-          CarouselSlider(
-            options: CarouselOptions(
-              height: 200.0,
-              enlargeCenterPage: true,
-              autoPlay: true,
-              aspectRatio: 16 / 9,
-              autoPlayCurve: Curves.fastOutSlowIn,
-              enableInfiniteScroll: true,
-              autoPlayAnimationDuration: Duration(milliseconds: 800),
-              viewportFraction: 0.8,
-            ),
-            items: [1,2,3,4,5].map((i) {
-              return Builder(
-                builder: (BuildContext context) {
-                  return Container(
-                    width: MediaQuery.of(context).size.width,
-                    margin: EdgeInsets.symmetric(horizontal: 5.0),
-                    decoration: BoxDecoration(
-                      color: Colors.amber,
-                    ),
-                    child: Center(
-                      child: Text('Slide $i', style: TextStyle(fontSize: 16.0)),
-                    ),
-                  );
-                },
-              );
-            }).toList(),
-          ),
+          // Ganti CarouselSlider dengan kode berikut
+          Obx(() {
+            return CarouselSlider(
+              options: CarouselOptions(
+                height: 300.0,
+                enlargeCenterPage: true,
+                autoPlay: true,
+                aspectRatio: 16 / 9,
+                autoPlayCurve: Curves.fastOutSlowIn,
+                enableInfiniteScroll: true,
+                autoPlayAnimationDuration: Duration(milliseconds: 800),
+                viewportFraction: 0.8,
+              ),
+              items: mainController.movieList.map((movie) {
+                return Builder(
+                  builder: (BuildContext context) {
+                    return GestureDetector(
+                      onTap: () {
+                        Get.to(() => MovieDetailPage(movie: movie));
+                      },
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        margin: EdgeInsets.symmetric(horizontal: 5.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          image: DecorationImage(
+                            image: AssetImage(movie.imageUrl),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  movie.title,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  movie.description,
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
+            );
+          }),
           // Daftar film yang sudah ada
           Expanded(
             child: Obx(() {
@@ -72,6 +117,12 @@ class _HomePageState extends State<HomePage> {
                       itemCount: mainController.movieList.length,
                       itemBuilder: (context, index) {
                         return ListTile(
+                          leading: Image.asset(
+                            mainController.movieList[index].imageUrl,
+                            width: 50,
+                            height: 75,
+                            fit: BoxFit.cover,
+                          ),
                           title: Text(mainController.movieList[index].title),
                           subtitle: Text(mainController.movieList[index].description),
                           trailing: IconButton(
@@ -86,12 +137,13 @@ class _HomePageState extends State<HomePage> {
                             onPressed: () {
                               // Toggle favorit
                               if (mainController.movieList[index].isFavorite) {
-                                mainController.deleteMovieFromFavorites(mainController.movieList[index].id!); // Tambahkan '!' untuk mengatasi nullability
+                                mainController.deleteMovieFromFavorites(mainController.movieList[index].id!);
                               } else {
                                 mainController.addMovieToFavorites(FavoriteMovieModel(
-                                  id: mainController.movieList[index].id ?? 0, // Menggunakan nilai default 0 jika id null
+                                  id: mainController.movieList[index].id ?? 0,
                                   title: mainController.movieList[index].title,
                                   description: mainController.movieList[index].description,
+                                  imageUrl: mainController.movieList[index].imageUrl, // Pastikan ini benar
                                 ));
                               }
                               mainController.movieList[index].isFavorite = !mainController.movieList[index].isFavorite;

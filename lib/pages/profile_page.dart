@@ -1,22 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:movie/pages/bookmarks_page.dart';
 import '../controllers/main_controller.dart';
-import '../pages/home_page.dart';
+import 'home_page.dart';
+import 'bookmarks_page.dart';
+import 'login_page.dart';
 
 class ProfilePage extends StatelessWidget {
   final MainController mainController = Get.find();
-
-  ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
-        automaticallyImplyLeading: false, // Menonaktifkan ikon tanda panah
+        title: Text('Profil'),
+        automaticallyImplyLeading: false,
       ),
-      body: Center(child: Text('Profile Page')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: AssetImage('lib/assets/profile.png'), // Menggunakan lib/assets/image.png
+            ),
+            SizedBox(height: 20),
+            Text(
+              mainController.username.value,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 40),
+            ElevatedButton(
+              child: Text('Keluar'),
+              onPressed: () {
+                // Logika untuk keluar
+                mainController.username.value = '';
+                mainController.password.value = '';
+                Get.offAll(() => LoginPage());
+              },
+            ),
+          ],
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -32,9 +56,8 @@ class ProfilePage extends StatelessWidget {
             label: 'Profile',
           ),
         ],
-        currentIndex: 2, // Set index ke 2 untuk Profile
+        currentIndex: 2,
         onTap: (index) {
-          // Logika untuk navigasi ke halaman yang sesuai
           if (index == 0) {
             Get.to(() => HomePage());
           } else if (index == 1) {
