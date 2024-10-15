@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:movie/models/favorite_movie_model.dart';
 import 'package:movie/pages/bookmarks_page.dart';
 import 'package:movie/pages/profile_page.dart';
+import 'package:movie/widgets/custom_bottom_navigation_bar.dart';
 import '../controllers/main_controller.dart';
 import 'movie_detail_page.dart';
 import 'package:carousel_slider/carousel_slider.dart'; // Tambahkan import ini
@@ -14,18 +15,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final MainController mainController = Get.find(); // Mengambil instance MainController
-  int _selectedIndex = 0; // Menyimpan indeks yang dipilih
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (index == 1) {
-      Get.to(() => BookmarksPage()); // Navigasi ke halaman bookmarks
-    } else if (index == 2) {
-      Get.to(() => ProfilePage()); // Navigasi ke halaman profile
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,23 +150,17 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark),
-            label: 'Bookmarks',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+      bottomNavigationBar: CustomBottomNavigationBar(
+        currentIndex: 0,
+        onTap: (index) {
+          if (index == 0) {
+            Get.to(() => HomePage());
+          } else if (index == 1) {
+            Get.to(() => BookmarksPage());
+          } else if (index == 2) {
+            Get.to(() => ProfilePage());
+          }
+        },
       ),
     );
   }

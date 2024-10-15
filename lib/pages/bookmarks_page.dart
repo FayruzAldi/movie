@@ -6,6 +6,9 @@ import 'home_page.dart';
 import 'profile_page.dart';
 import '../models/favorite_movie_model.dart';
 import '../models/task_model.dart';
+import '../widgets/custom_app_bar.dart';
+import '../widgets/movie_list_tile.dart';
+import '../widgets/custom_bottom_navigation_bar.dart';
 
 class BookmarksPage extends StatelessWidget {
   final MainController mainController = Get.find();
@@ -13,8 +16,8 @@ class BookmarksPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Bookmarks'),
+      appBar: CustomAppBar(
+        title: 'Bookmarks',
         automaticallyImplyLeading: false,
       ),
       body: Obx(() {
@@ -23,8 +26,7 @@ class BookmarksPage extends StatelessWidget {
                 itemCount: mainController.favoriteMovies.length,
                 itemBuilder: (context, index) {
                   FavoriteMovieModel favoriteMovie = mainController.favoriteMovies[index];
-                  // Cari film yang sesuai di movieList
-                  TaskModel? originalMovie = mainController.movieList.firstWhere(
+                  TaskModel originalMovie = mainController.movieList.firstWhere(
                     (movie) => movie.id == favoriteMovie.id,
                     orElse: () => TaskModel(
                       id: favoriteMovie.id,
@@ -34,68 +36,38 @@ class BookmarksPage extends StatelessWidget {
                       isFavorite: true,
                     ),
                   );
-                  return ListTile(
-                    leading: Image.asset(
-                      originalMovie.imageUrl,
-                      width: 50,
-                      height: 75,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        print('Error loading image: ${originalMovie.imageUrl}');
-                        return Image.asset(
-                          'lib/assets/image.png',
-                          width: 50,
-                          height: 75,
-                          fit: BoxFit.cover,
-                        );
-                      },
-                    ),
-                    title: Text(originalMovie.title),
-                    subtitle: Text(originalMovie.description),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () {
-                        Get.defaultDialog(
-                          title: 'Hapus Favorit',
-                          middleText: 'Apakah Anda yakin ingin menghapus film ini dari favorit?',
-                          onConfirm: () {
-                            mainController.deleteMovieFromFavorites(favoriteMovie.id);
-                            Get.back(); // Ini akan menutup dialog
-                          },
-                          onCancel: () {
-                            // Hapus Get.back() di sini
-                            // Tidak perlu melakukan apa-apa saat membatalkan
-                          },
-                        );
-                      },
-                    ),
+                  return MovieListTile(
+                    movie: originalMovie,
+                    isFavorite: true,
                     onTap: () {
                       Get.to(() => MovieDetailPage(movie: originalMovie));
                     },
+                    onFavoriteToggle: () {
+                      Get.defaultDialog(
+                        title: 'Hapus Favorit',
+                        middleText: 'Apakah Anda yakin ingin menghapus film ini dari favorit?',
+                        onConfirm: () {
+                          mainController.deleteMovieFromFavorites(favoriteMovie.id);
+                          Get.back();
+                        },
+                        onCancel: () {
+                          // Tidak perlu melakukan apa-apa saat membatalkan
+                        },
+                      );
+                    },
+                    trailingIcon: Icons.delete, // Mengganti ikon hati dengan ikon tong sampah
                   );
                 },
               )
             : Center(child: Text('Tidak ada film favorit.'));
       }),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark),
-            label: 'Bookmarks',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+      bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: 1,
         onTap: (index) {
           if (index == 0) {
             Get.to(() => HomePage());
+          } else if (index == 1) {
+            Get.to(() => BookmarksPage());
           } else if (index == 2) {
             Get.to(() => ProfilePage());
           }

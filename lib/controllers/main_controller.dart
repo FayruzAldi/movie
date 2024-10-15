@@ -62,4 +62,6 @@ class MainController extends GetxController {
     await dbHelper.deleteFavoriteMovie(id);
     fetchFavoriteMoviesFromDb();
   }
+
+  void toggleFavorite(TaskModel movie) {}
 }

@@ -75,6 +75,8 @@ flutter:
     - lib/assets/ironman.png
     - lib/assets/spiderman.png
     - lib/assets/thor.png
+    - lib/assets/profile.png
+
     # Tambahkan aset lain yang diperlukan
 
   # An image asset can refer to one or more resolution-specific "variants", see

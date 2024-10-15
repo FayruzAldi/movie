@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:movie/widgets/custom_bottom_navigation_bar.dart';
 import '../controllers/main_controller.dart';
 import 'home_page.dart';
 import 'bookmarks_page.dart';
@@ -41,27 +42,15 @@ class ProfilePage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bookmark),
-            label: 'Bookmarks',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+      bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: 2,
         onTap: (index) {
           if (index == 0) {
             Get.to(() => HomePage());
           } else if (index == 1) {
             Get.to(() => BookmarksPage());
+          } else if (index == 2) {
+            Get.to(() => ProfilePage());
           }
         },
       ),
