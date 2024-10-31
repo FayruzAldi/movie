@@ -28,4 +28,24 @@ class FavoriteMovieModel {
       'imageUrl': imageUrl,
     };
   }
+
+  // Tambahkan metode toMap()
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'imageUrl': imageUrl,
+    };
+  }
+
+  // Jika Anda belum memiliki metode fromMap(), tambahkan juga:
+  factory FavoriteMovieModel.fromMap(Map<String, dynamic> map) {
+    return FavoriteMovieModel(
+      id: map['id'],
+      title: map['title'],
+      description: map['description'],
+      imageUrl: map['imageUrl'] ?? '',
+    );
+  }
 }

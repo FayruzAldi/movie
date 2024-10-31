@@ -31,7 +31,9 @@ class TaskModel {
       title: map['title'],
       description: map['description'],
       imageUrl: map['imageUrl'],
-      isFavorite: map['isFavorite'] == 1, // Ambil dari database
+      isFavorite: map['isFavorite'] == 1, 
+      // Ambil dari database
     );
   }
+  
 }

@@ -11,8 +11,8 @@ import '../widgets/movie_list_tile.dart';
 import '../widgets/custom_bottom_navigation_bar.dart';
 
 class BookmarksPage extends StatelessWidget {
-  final MainController mainController = Get.find();
-
+  final MainController controller = Get.find<MainController>();
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,47 +20,18 @@ class BookmarksPage extends StatelessWidget {
         title: 'Bookmarks',
         automaticallyImplyLeading: false,
       ),
-      body: Obx(() {
-        return mainController.favoriteMovies.isNotEmpty
-            ? ListView.builder(
-                itemCount: mainController.favoriteMovies.length,
-                itemBuilder: (context, index) {
-                  FavoriteMovieModel favoriteMovie = mainController.favoriteMovies[index];
-                  TaskModel originalMovie = mainController.movieList.firstWhere(
-                    (movie) => movie.id == favoriteMovie.id,
-                    orElse: () => TaskModel(
-                      id: favoriteMovie.id,
-                      title: favoriteMovie.title,
-                      description: favoriteMovie.description,
-                      imageUrl: favoriteMovie.imageUrl,
-                      isFavorite: true,
-                    ),
-                  );
-                  return MovieListTile(
-                    movie: originalMovie,
-                    isFavorite: true,
-                    onTap: () {
-                      Get.to(() => MovieDetailPage(movie: originalMovie));
-                    },
-                    onFavoriteToggle: () {
-                      Get.defaultDialog(
-                        title: 'Hapus Favorit',
-                        middleText: 'Apakah Anda yakin ingin menghapus film ini dari favorit?',
-                        onConfirm: () {
-                          mainController.deleteMovieFromFavorites(favoriteMovie.id);
-                          Get.back();
-                        },
-                        onCancel: () {
-                          // Tidak perlu melakukan apa-apa saat membatalkan
-                        },
-                      );
-                    },
-                    trailingIcon: Icons.delete, // Mengganti ikon hati dengan ikon tong sampah
-                  );
-                },
-              )
-            : Center(child: Text('Tidak ada film favorit.'));
-      }),
+      body: GetBuilder<MainController>(
+        builder: (controller) {
+          return controller.favoriteMovies.isEmpty
+              ? Center(child: Text('Tidak ada film favorit.'))
+              : ListView.builder(
+                  itemCount: controller.favoriteMovies.length,
+                  itemBuilder: (context, index) {
+                    return _buildFavoriteMovieItem(controller.favoriteMovies[index]);
+                  },
+                );
+        },
+      ),
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: 1,
         onTap: (index) {
@@ -73,6 +44,41 @@ class BookmarksPage extends StatelessWidget {
           }
         },
       ),
+    );
+  }
+
+  Widget _buildFavoriteMovieItem(FavoriteMovieModel favoriteMovie) {
+    TaskModel originalMovie = controller.movieList.firstWhere(
+      (movie) => movie.id == favoriteMovie.id,
+      orElse: () => TaskModel(
+        id: favoriteMovie.id,
+        title: favoriteMovie.title,
+        description: favoriteMovie.description,
+        imageUrl: favoriteMovie.imageUrl,
+        isFavorite: true,
+      ),
+    );
+
+    return MovieListTile(
+      movie: originalMovie,
+      isFavorite: true,
+      onTap: () {
+        Get.to(() => MovieDetailPage(movie: originalMovie));
+      },
+      onFavoriteToggle: () {
+        Get.defaultDialog(
+          title: 'Hapus Favorit',
+          middleText: 'Apakah Anda yakin ingin menghapus film ini dari favorit?',
+          onConfirm: () {
+            controller.deleteMovieFromFavorites(favoriteMovie.id);
+            Get.back();
+          },
+          onCancel: () {
+            // Tidak perlu melakukan apa-apa saat membatalkan
+          },
+        );
+      },
+      trailingIcon: Icons.delete,
     );
   }
 }

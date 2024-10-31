@@ -6,9 +6,9 @@ import '../controllers/task_controller.dart';
 class MainController extends GetxController {
   var username = ''.obs; // Menyimpan username
   var password = ''.obs; // Menyimpan password
-  var movieList = <TaskModel>[].obs; // Daftar film
-  var favoriteMovies = <FavoriteMovieModel>[].obs; // Daftar film favorit
-  TaskController dbHelper = TaskController();
+  List<TaskModel> movieList = [];
+  List<FavoriteMovieModel> favoriteMovies = [];
+  TaskController dbHelper = Get.find<TaskController>();
 
   @override
   void onInit() {
@@ -19,14 +19,36 @@ class MainController extends GetxController {
 
   void fetchMoviesFromDb() async {
     var movies = await dbHelper.fetchMovies();
-    movieList.assignAll(movies);
+    movieList = movies;
     updateFavoriteStatus();
+    update();
+  }
+
+  void loadDummyMovies() {
+    movieList.addAll([
+      TaskModel(
+        id: 1,
+        title: 'Antman',
+        description: 'Deskripsi Antman',
+        imageUrl: 'lib/assets/antman.png',
+        isFavorite: false,
+      ),
+      TaskModel(
+        id: 2,
+        title: 'Black Panther',
+        description: 'Deskripsi Black Panther',
+        imageUrl: 'lib/assets/blackpanther.png',
+        isFavorite: false,
+      ),
+      // Tambahkan film lainnya...
+    ]);
   }
 
   void fetchFavoriteMoviesFromDb() async {
     var favorites = await dbHelper.fetchFavoriteMovies();
-    favoriteMovies.assignAll(favorites);
+    favoriteMovies = favorites;
     updateFavoriteStatus();
+    update();
   }
 
   void updateFavoriteStatus() {
@@ -63,5 +85,48 @@ class MainController extends GetxController {
     fetchFavoriteMoviesFromDb();
   }
 
-  void toggleFavorite(TaskModel movie) {}
+  void toggleFavorite(TaskModel movie) async {
+    try {
+      if (movie.isFavorite) {
+        await dbHelper.deleteFavoriteMovie(movie.id!);
+        favoriteMovies.removeWhere((fav) => fav.id == movie.id);
+      } else {
+        FavoriteMovieModel favMovie = FavoriteMovieModel(
+          id: movie.id!,
+          title: movie.title,
+          description: movie.description,
+          imageUrl: movie.imageUrl,
+        );
+        await dbHelper.addFavoriteMovie(favMovie);
+        favoriteMovies.add(favMovie);
+      }
+      movie.isFavorite = !movie.isFavorite;
+      await dbHelper.updateMovie(movie);
+      updateFavoriteStatus();
+    } catch (e) {
+      print("Error toggling favorite: $e");
+      Get.snackbar("Error", "Gagal mengubah status favorit");
+    }
+  }
+
+  void loadMovies() {
+    // Tambahkan beberapa film dummy untuk pengujian
+    movieList.addAll([
+      TaskModel(
+        id: 1,
+        title: 'Film 1',
+        description: 'Deskripsi Film 1',
+        imageUrl: 'assets/images/movie1.jpg',
+        isFavorite: false,
+      ),
+      TaskModel(
+        id: 2,
+        title: 'Film 2',
+        description: 'Deskripsi Film 2',
+        imageUrl: 'assets/images/movie2.jpg',
+        isFavorite: false,
+      ),
+      // Tambahkan lebih banyak film jika diperlukan
+    ]);
+  }
 }

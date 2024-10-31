@@ -1,154 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:movie/models/favorite_movie_model.dart';
+import 'package:movie/models/task_model.dart';
 import 'package:movie/pages/bookmarks_page.dart';
 import 'package:movie/pages/profile_page.dart';
 import 'package:movie/widgets/custom_bottom_navigation_bar.dart';
 import '../controllers/main_controller.dart';
 import 'movie_detail_page.dart';
-import 'package:carousel_slider/carousel_slider.dart'; // Tambahkan import ini
+import 'package:carousel_slider/carousel_slider.dart';
 
-class HomePage extends StatefulWidget {
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final MainController mainController = Get.find(); // Mengambil instance MainController
-
+class HomePage extends GetView<MainController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Movie Slider'),
+        title: Text('Motify'),
       ),
-      body: Column(
-        children: [
-          // Ganti CarouselSlider dengan kode berikut
-          Obx(() {
-            return CarouselSlider(
-              options: CarouselOptions(
-                height: 300.0,
-                enlargeCenterPage: true,
-                autoPlay: true,
-                aspectRatio: 16 / 9,
-                autoPlayCurve: Curves.fastOutSlowIn,
-                enableInfiniteScroll: true,
-                autoPlayAnimationDuration: Duration(milliseconds: 800),
-                viewportFraction: 0.8,
+      body: GetBuilder<MainController>(
+        builder: (controller) {
+          if (controller.movieList.isEmpty) {
+            return Center(child: Text('Tidak ada film tersedia.'));
+          }
+          return Column(
+            children: [
+              _buildCarousel(controller, context),
+              Expanded(
+                child: _buildResponsiveMovieList(context, controller),
               ),
-              items: mainController.movieList.map((movie) {
-                return Builder(
-                  builder: (BuildContext context) {
-                    return GestureDetector(
-                      onTap: () {
-                        Get.to(() => MovieDetailPage(movie: movie));
-                      },
-                      child: Container(
-                        width: MediaQuery.of(context).size.width,
-                        margin: EdgeInsets.symmetric(horizontal: 5.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          image: DecorationImage(
-                            image: AssetImage(movie.imageUrl),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  movie.title,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  movie.description,
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              }).toList(),
-            );
-          }),
-          // Daftar film yang sudah ada
-          Expanded(
-            child: Obx(() {
-              return mainController.movieList.isNotEmpty
-                  ? ListView.builder(
-                      itemCount: mainController.movieList.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          leading: Image.asset(
-                            mainController.movieList[index].imageUrl,
-                            width: 50,
-                            height: 75,
-                            fit: BoxFit.cover,
-                          ),
-                          title: Text(mainController.movieList[index].title),
-                          subtitle: Text(mainController.movieList[index].description),
-                          trailing: IconButton(
-                            icon: Icon(
-                              mainController.movieList[index].isFavorite
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              color: mainController.movieList[index].isFavorite
-                                  ? Colors.red // Mengubah warna menjadi merah jika favorit
-                                  : null, // Warna default jika tidak favorit
-                            ),
-                            onPressed: () {
-                              // Toggle favorit
-                              if (mainController.movieList[index].isFavorite) {
-                                mainController.deleteMovieFromFavorites(mainController.movieList[index].id!);
-                              } else {
-                                mainController.addMovieToFavorites(FavoriteMovieModel(
-                                  id: mainController.movieList[index].id ?? 0,
-                                  title: mainController.movieList[index].title,
-                                  description: mainController.movieList[index].description,
-                                  imageUrl: mainController.movieList[index].imageUrl, // Pastikan ini benar
-                                ));
-                              }
-                              mainController.movieList[index].isFavorite = !mainController.movieList[index].isFavorite;
-                              mainController.updateMovie(mainController.movieList[index]);
-                            },
-                          ),
-                          onTap: () {
-                            Get.to(() => MovieDetailPage(movie: mainController.movieList[index])); // Navigasi ke halaman detail
-                          },
-                        );
-                      },
-                    )
-                  : Center(child: Text('Tidak ada film tersedia.')); // Pesan jika tidak ada film
-            }),
-          ),
-        ],
+            ],
+          );
+        },
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         currentIndex: 0,
@@ -161,6 +41,191 @@ class _HomePageState extends State<HomePage> {
             Get.to(() => ProfilePage());
           }
         },
+      ),
+    );
+  }
+
+ Widget _buildCarousel(MainController controller, BuildContext context) {
+  double screenWidth = MediaQuery.of(context).size.width;
+  double carouselHeight;
+
+  if (screenWidth > 600 && screenWidth <= 900) {
+    carouselHeight = 300; // Medium size for tablet mode
+  } else if (screenWidth > 900) {
+    carouselHeight = 250; // Smaller size for larger screens
+  } else {
+    carouselHeight = 200; // Default size for smaller screens
+  }
+
+  return CarouselSlider(
+    options: CarouselOptions(
+      height: carouselHeight,
+      enlargeCenterPage: true,
+      autoPlay: true,
+      aspectRatio: 16 / 9,
+      autoPlayCurve: Curves.fastOutSlowIn,
+      enableInfiniteScroll: true,
+      autoPlayAnimationDuration: Duration(milliseconds: 800),
+      viewportFraction: 0.85,
+    ),
+    items: controller.movieList.map((TaskModel movie) {
+      return Builder(
+        builder: (BuildContext context) {
+          return GestureDetector(
+            onTap: () {
+              Get.to(() => MovieDetailPage(movie: movie));
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(movie.imageUrl),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.8),
+                      ],
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          movie.title,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          movie.description,
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }).toList(),
+  );
+}
+
+
+  Widget _buildResponsiveMovieList(
+      BuildContext context, MainController controller) {
+    bool isTablet = MediaQuery.of(context).size.width > 600;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: isTablet
+          ? GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 7,
+              ),
+              itemCount: controller.movieList.length,
+              itemBuilder: (context, index) {
+                final movie = controller.movieList[index];
+                return _buildMovieCard(movie, controller);
+              },
+            )
+          : ListView.builder(
+              padding: EdgeInsets.only(bottom: 8), // Optional padding for spacing
+              itemCount: controller.movieList.length,
+              itemBuilder: (context, index) {
+                final movie = controller.movieList[index];
+                return _buildMovieCard(movie, controller);
+              },
+            ),
+    );
+  }
+
+  Widget _buildMovieCard(TaskModel movie, MainController controller) {
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => MovieDetailPage(movie: movie));
+      },
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        margin: EdgeInsets.symmetric(vertical: 4),
+        elevation: 2,
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Image.asset(
+                  movie.imageUrl,
+                  width: 40,
+                  height: 60,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      movie.title,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      movie.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  movie.isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: movie.isFavorite ? Colors.red : null,
+                  size: 18,
+                ),
+                onPressed: () {
+                  controller.toggleFavorite(movie);
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

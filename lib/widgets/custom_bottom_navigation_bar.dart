@@ -36,13 +36,13 @@ class CustomBottomNavigationBar extends StatelessWidget {
         if (index != currentIndex) {
           switch (index) {
             case 0:
-              Get.off(() => HomePage());
+              Get.to(() => HomePage());
               break;
             case 1:
-              Get.off(() => BookmarksPage());
+              Get.to(() => BookmarksPage());
               break;
             case 2:
-              Get.off(() => ProfilePage());
+              Get.to(() => ProfilePage());
               break;
           }
         }

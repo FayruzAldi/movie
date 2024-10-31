@@ -4,7 +4,7 @@ import '../controllers/main_controller.dart';
 import 'home_page.dart'; // Pastikan untuk mengimpor halaman tujuan
 
 class LoginPage extends StatelessWidget {
-  final MainController mainController = Get.put(MainController());
+  final MainController mainController = Get.find<MainController>();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 

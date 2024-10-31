@@ -9,22 +9,27 @@ class TaskController extends GetxController {
 
   var tasks = <TaskModel>[].obs;
 
-  Future<Database?> get db async {
-    if (_db == null) {
-      _db = await initDB();
-    }
-    return _db;
+  Future<TaskController> init() async {
+    await _initDB();
+    return this;
   }
 
-  // Inisialisasi Database dengan onUpgrade untuk migrasi
-  Future<Database> initDB() async {
-    var databasePath = await getDatabasesPath();
-    String path = join(databasePath, 'task_database.db');
+  Future<Database> get database async {
+    if (_db != null) return _db!;
+    _db = await _initDB();
+    return _db!;
+  }
 
+  Future<Database> _initDB() async {
+    var databasesPath = await getDatabasesPath();
+    String path = join(databasesPath, 'task_database.db');
+    print("Database path: $path");
+    
     return await openDatabase(
       path,
-      version: 4, // Tingkatkan versi untuk migrasi
-      onCreate: (db, version) async {
+      version: 2, // Tingkatkan versi database
+      onCreate: (Database db, int version) async {
+        print("Creating database tables");
         await db.execute('''
           CREATE TABLE tasks(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,19 +44,15 @@ class TaskController extends GetxController {
           CREATE TABLE favorite_movies(
             id INTEGER PRIMARY KEY,
             title TEXT,
-            description TEXT
+            description TEXT,
+            imageUrl TEXT
           )
         ''');
       },
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 4) {
-          await db.execute('''
-            CREATE TABLE favorite_movies(
-              id INTEGER PRIMARY KEY,
-              title TEXT,
-              description TEXT
-            )
-          ''');
+      onUpgrade: (Database db, int oldVersion, int newVersion) async {
+        if (oldVersion < 2) {
+          // Tambahkan kolom imageUrl ke tabel favorite_movies jika belum ada
+          await db.execute('ALTER TABLE favorite_movies ADD COLUMN imageUrl TEXT');
         }
       },
     );
@@ -60,58 +61,59 @@ class TaskController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    addSampleMovies(); // Panggil fungsi untuk menambahkan data sampel
-    loadTasks(); // Load tasks when the controller is initialized
+    _initDB().then((_) {
+      addSampleMovies();
+      loadTasks();
+    });
   }
 
   // Fungsi untuk menambahkan tugas/film
   Future<int> addMovie(TaskModel task) async {
-    var dbClient = await db;
-    int result = await dbClient!.insert('tasks', task.toMap());
-    loadTasks(); // Muat ulang semua data setelah menambah
+    var dbClient = await database;
+    int result = await dbClient.insert('tasks', task.toMap());
+    await loadTasks();
     return result;
   }
 
   // Fungsi untuk mendapatkan semua tugas/film dari database
   Future<void> loadTasks() async {
-    var dbClient = await db;
-    List<Map<String, dynamic>> queryResult = await dbClient!.query('tasks');
-    print('Jumlah film yang dimuat: ${queryResult.length}'); // Tambahkan log ini
+    var dbClient = await database;
+    List<Map<String, dynamic>> queryResult = await dbClient.query('tasks');
+    print('Jumlah film yang dimuat: ${queryResult.length}');
     tasks.assignAll(queryResult.map((data) => TaskModel.fromMap(data)).toList());
   }
 
   // Fungsi untuk mengupdate data tugas/film
   Future<int> updateMovie(TaskModel task) async {
-    var dbClient = await db;
-    int result = await dbClient!.update(
+    var dbClient = await database;
+    int result = await dbClient.update(
       'tasks',
       task.toMap(),
       where: 'id = ?',
       whereArgs: [task.id],
     );
-    await loadTasks(); // Pastikan untuk memuat ulang data setelah memperbarui
+    await loadTasks();
     return result;
   }
 
   // Fungsi untuk menghapus data tugas/film berdasarkan ID
   Future<void> deleteMovie(int id) async {
-    var dbClient = await db;
-    await dbClient!.delete('tasks', where: 'id = ?', whereArgs: [id]);
-    await loadTasks(); // Pastikan untuk memuat ulang data setelah menghapus
+    var dbClient = await database;
+    await dbClient.delete('tasks', where: 'id = ?', whereArgs: [id]);
+    await loadTasks();
   }
 
   // Fungsi untuk menambahkan beberapa film (sampel)
-  void addSampleMovies() async {
-    // Hapus semua film yang ada sebelum menambahkan yang baru
-    await deleteAllMovies(); // Tambahkan fungsi ini untuk menghapus semua film
+  Future<void> addSampleMovies() async {
+    await deleteAllMovies();
 
     List<TaskModel> movies = [
       TaskModel(
         title: 'Inception',
         description: 'A mind-bending thriller about dreams within dreams.',
-        imageUrl: 'lib/assets/inception.png', // Ganti dengan path placeholder
+        imageUrl: 'lib/assets/inception.png',
       ),
-      TaskModel(
+       TaskModel(
         title: 'Thor',
         description: 'Thor, the god of thunder.',
         imageUrl: 'lib/assets/thor.png', // Ganti dengan path placeholder
@@ -159,46 +161,51 @@ class TaskController extends GetxController {
     ];
 
     for (var movie in movies) {
-      await addMovie(movie); // Pastikan untuk menunggu hingga film ditambahkan
+      await addMovie(movie);
     }
   }
 
   // Fungsi untuk mengambil semua film
   Future<List<TaskModel>> fetchMovies() async {
-    var dbClient = await db;
-    List<Map<String, dynamic>> queryResult = await dbClient!.query('tasks');
+    var dbClient = await database;
+    List<Map<String, dynamic>> queryResult = await dbClient.query('tasks');
     return queryResult.map((data) => TaskModel.fromMap(data)).toList();
   }
 
   Future<void> deleteAllMovies() async {
-    var dbClient = await db;
-    await dbClient!.delete('tasks'); // Menghapus semua film dari tabel
+    var dbClient = await database;
+    await dbClient.delete('tasks');
   }
 
   Future<void> addFavoriteMovie(FavoriteMovieModel movie) async {
-    var dbClient = await db;
-    await dbClient!.insert('favorite_movies', {
-      'id': movie.id,
-      'title': movie.title,
-      'description': movie.description,
-    });
+    var dbClient = await database;
+    try {
+      await dbClient.insert('favorite_movies', movie.toMap());
+      print("Favorite movie added successfully: ${movie.title}");
+    } catch (e) {
+      print("Error adding favorite movie: $e");
+    }
   }
 
   Future<void> deleteFavoriteMovie(int id) async {
-    var dbClient = await db;
-    print("Deleting favorite movie with id: $id"); // Log untuk debugging
-    await dbClient!.delete('favorite_movies', where: 'id = ?', whereArgs: [id]);
+    var dbClient = await database;
+    try {
+      await dbClient.delete('favorite_movies', where: 'id = ?', whereArgs: [id]);
+      print("Favorite movie deleted successfully: $id");
+    } catch (e) {
+      print("Error deleting favorite movie: $e");
+    }
   }
 
   Future<List<FavoriteMovieModel>> fetchFavoriteMovies() async {
-    var dbClient = await db;
-    // Tambahkan log untuk debugging
+    var dbClient = await database;
     print("Fetching favorite movies from database...");
-    List<Map<String, dynamic>> queryResult = await dbClient!.query('favorite_movies');
+    List<Map<String, dynamic>> queryResult = await dbClient.query('favorite_movies');
     return queryResult.map((data) => FavoriteMovieModel(
       id: data['id'],
       title: data['title'],
-      description: data['description'], imageUrl: '',
+      description: data['description'],
+      imageUrl: data['imageUrl'] ?? '',
     )).toList();
   }
 }
